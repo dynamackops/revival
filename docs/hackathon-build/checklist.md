@@ -14,7 +14,7 @@ Status: Locked for autonomous implementation with visual review pauses.
 
 ## Checklist
 
-- [ ] **1. Scaffold the Revival workspace and shared contracts**
+- [x] **1. Scaffold the Revival workspace and shared contracts**
   Spec ref: `spec.md > 4. Repository Layout`
   What to build: In one focused setup slice, create the pnpm TypeScript workspace, React/Vite web app, FastAPI service and worker packages, shared status enums, Pydantic response schemas, environment examples, MIT license, and CI shells. Keep model IDs and provider URLs environment-driven.
   Acceptance: The repository visibly separates the browser, control API, workers, contracts, prompts, evaluations, Supabase migrations, and documentation; no secret or provider credential is committed.

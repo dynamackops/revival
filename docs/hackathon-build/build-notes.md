@@ -87,3 +87,13 @@
 - Tried the normal installation path and an explicit offline-cache path; neither could supply the missing dependencies.
 - Checklist item 1 remains unchecked because the agreed verification command has not passed.
 - The code checkpoint is preserved as Revival-foundation.zip.
+
+## 2026-09-03 — Build Item 1 Completed
+
+- Connected the build to the public repository https://github.com/dynamackops/revival.
+- The browser upload had placed source under Revival-foundation, so the project was normalized to the repository root on branch codex/foundation-verify.
+- Opened draft pull request #1 as the safe foundation checkpoint.
+- Restored hidden project files omitted by browser upload, including the environment template, gitignore, CI workflow, editor settings, and hackathon state.
+- GitHub Actions exposed and verified three small hardening fixes: pnpm 11 build-script allowlisting, explicit enum value comparisons for mypy, and explicit Vitest function imports.
+- CI run 33749834964 passed both jobs: dependency installation, secret scan, TypeScript checks, frontend test, production build, Ruff, mypy, and Python tests.
+- Checklist item 1 is complete. The successful head commit is 0a9b1ca747ebe35a501691499872e2145a740fe1.
