@@ -53,10 +53,19 @@ async function collectFiles(directory) {
 const findings = [];
 for (const file of await collectFiles(root)) {
   const contents = await readFile(file, "utf8");
+  const repositoryPath = relative(root, file);
+
+  if (
+    repositoryPath.startsWith(join("apps", "web")) &&
+    /SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY|sb_secret_/g.test(contents)
+  ) {
+    findings.push("server-only Supabase credential referenced by browser code in " + repositoryPath);
+  }
+
   for (const [label, pattern] of suspiciousPatterns) {
     pattern.lastIndex = 0;
     if (pattern.test(contents)) {
-      findings.push(label + " in " + relative(root, file));
+      findings.push(label + " in " + repositoryPath);
     }
   }
 }

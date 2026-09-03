@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.auth import router as auth_router
 from app.schemas.common import HealthResponse
 from app.settings import settings
 
@@ -9,6 +10,8 @@ app = FastAPI(
     docs_url="/docs" if settings.environment != "production" else None,
     redoc_url=None,
 )
+
+app.include_router(auth_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["system"])

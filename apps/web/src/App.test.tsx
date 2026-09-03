@@ -9,6 +9,8 @@ describe("Revival foundation", () => {
 
     expect(screen.getByRole("heading", { name: "Revival" })).toBeInTheDocument();
     expect(screen.getByText("Bring this project back to life.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue with GitHub" })).toBeDisabled();
+    expect(screen.getByText("Supabase connection pending")).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent(/lazy|failed|neglected/i);
   });
 });

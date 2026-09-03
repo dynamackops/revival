@@ -37,3 +37,21 @@ jobs:
       - run: uv run ruff check services
       - run: uv run mypy
       - run: uv run pytest
+
+  supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Start local Supabase
+        run: npx --yes supabase@2.116.0 start
+      - name: Lint database schema
+        run: npx --yes supabase@2.116.0 db lint --local --level warning
+      - name: Prove two-user ownership isolation
+        run: npx --yes supabase@2.116.0 test db
+      - name: Stop local Supabase
+        if: always()
+        run: npx --yes supabase@2.116.0 stop --no-backup

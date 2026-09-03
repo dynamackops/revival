@@ -16,6 +16,11 @@ class Settings(BaseSettings):
         default="http://localhost:5173",
         alias="REVIVAL_ALLOWED_ORIGINS",
     )
+    supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
+    supabase_expected_audience: str = Field(
+        default="authenticated",
+        alias="SUPABASE_EXPECTED_AUDIENCE",
+    )
     nemotron_reasoning_model: str | None = Field(
         default=None,
         alias="NEMOTRON_REASONING_MODEL",

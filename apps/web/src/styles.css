@@ -65,6 +65,32 @@ h1 {
   font-size: clamp(1rem, 2vw, 1.2rem);
 }
 
+.auth-control {
+  margin: 0 0 2rem;
+}
+
+.auth-control button {
+  border: 1px solid #c8a95b;
+  border-radius: 0.25rem;
+  padding: 0.7rem 1rem;
+  color: #17130f;
+  background: #c8a95b;
+  cursor: pointer;
+}
+
+.auth-control button:disabled {
+  color: #8e846f;
+  background: #2d2921;
+  border-color: #5f5747;
+  cursor: not-allowed;
+}
+
+.auth-note {
+  margin: 0.6rem 0 0;
+  color: #9c927d;
+  font-size: 0.75rem;
+}
+
 .status {
   display: flex;
   align-items: center;
