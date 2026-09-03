@@ -17,7 +17,7 @@ describe("Supabase browser configuration", () => {
     expect(
       hasSupabaseBrowserConfiguration({
         url: "https://example.supabase.co",
-        publishableKey: "",
+        publishableKey: "sb_secret_never_ship_this",
       }),
     ).toBe(false);
   });

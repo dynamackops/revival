@@ -97,3 +97,13 @@
 - GitHub Actions exposed and verified three small hardening fixes: pnpm 11 build-script allowlisting, explicit enum value comparisons for mypy, and explicit Vitest function imports.
 - CI run 33749834964 passed both jobs: dependency installation, secret scan, TypeScript checks, frontend test, production build, Ruff, mypy, and Python tests.
 - Checklist item 1 is complete. The successful head commit is 0a9b1ca747ebe35a501691499872e2145a740fe1.
+
+## 2026-09-03 — Build Item 2 Implementation Candidate
+
+- Created the foundation migration with Supabase CLI 2.116.0 and implemented every public product table, private execution table, ownership index, status constraint, update trigger, and RLS policy in the technical specification.
+- Added a private `revival-artifacts` Storage bucket with user-folder SELECT, INSERT, UPDATE, and DELETE policies.
+- Added an official pgTAP-style two-user test covering RLS enablement, cross-user repository and Creator Memory isolation, protected finding edits, private-schema denial, anonymous denial, and private Storage configuration.
+- Wired the browser to Supabase's GitHub OAuth provider using PKCE and a publishable-key-only client. Added both source and built-bundle guards against server-only credentials.
+- Added FastAPI bearer authentication using Supabase's asymmetric JWKS endpoint, strict issuer and audience checks, allowed signing algorithms, and verified UUID subjects.
+- GitHub Actions run 33751571389 passed the web, Python, database lint, and two-user Supabase jobs for commit ac1b4088d56d6aa57b4f8269b1631a4ac222dfd2.
+- Live GitHub social-login verification remains pending because no Revival Supabase project has been selected or created. Existing connected projects were not reused because they belong to other applications.

@@ -24,6 +24,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:web
       - run: pnpm build
+      - run: pnpm bundle:check
 
   python:
     runs-on: ubuntu-latest

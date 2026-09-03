@@ -19,7 +19,8 @@ let browserClient: SupabaseClient | undefined;
 export function hasSupabaseBrowserConfiguration(
   configuration: SupabaseBrowserConfiguration = browserConfiguration(),
 ): configuration is Required<SupabaseBrowserConfiguration> {
-  return Boolean(configuration.url?.trim() && configuration.publishableKey?.trim());
+  const key = configuration.publishableKey?.trim();
+  return Boolean(configuration.url?.trim() && key && !key.startsWith("sb_secret_"));
 }
 
 export function getSupabaseBrowserClient(): SupabaseClient {
