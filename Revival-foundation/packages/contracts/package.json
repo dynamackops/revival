@@ -1,0 +1,16 @@
+{
+  "name": "@revival/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --pretty false",
+    "lint": "tsc -p tsconfig.json --pretty false"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

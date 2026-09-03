@@ -1,0 +1,82 @@
+:root {
+  color: #f0e5c8;
+  background: #100e0b;
+  font-family: "Courier New", Courier, monospace;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at 50% 20%, rgb(115 94 51 / 20%), transparent 38%),
+    linear-gradient(135deg, #16120e, #0c0b09);
+}
+
+.terminal {
+  width: min(42rem, 100%);
+  border: 1px solid #8b7848;
+  border-radius: 0.75rem;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  background: #17130f;
+  box-shadow:
+    0 0 0 0.5rem #0b0907,
+    0 1.5rem 5rem rgb(0 0 0 / 50%);
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: #c8a95b;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.5rem, 12vw, 7rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+
+.tagline {
+  margin: 0.75rem 0 2.5rem;
+  color: #cfc4aa;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #8fc98a;
+  font-size: 0.85rem;
+}
+
+.status span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: currentcolor;
+  box-shadow: 0 0 0.8rem currentcolor;
+}
