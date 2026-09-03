@@ -78,3 +78,12 @@
 - Jasmine approved the 12-item checklist without changes and said, **im ready to builddd**.
 - Build preferences are now locked: autonomous implementation, verification on every item, commits as revert points, and visual review pauses after items 4, 8, and 10.
 - Next action: execute the checklist through the guided build workflow.
+
+## 2026-09-02 — Build Item 1 Started
+
+- Created the Revival monorepo foundation: React/Vite/TypeScript web shell, FastAPI control API, worker package, shared contracts, prompt and evaluation packages, Supabase migration area, CI workflow, environment template, secret scanner, README, and MIT license.
+- Static verification passed: the secret scan, JSON manifest parsing, Python compilation, and archive integrity check.
+- Dependency-backed verification is blocked in this Work environment because package-registry network requests are unavailable and the required npm and Python packages are not cached.
+- Tried the normal installation path and an explicit offline-cache path; neither could supply the missing dependencies.
+- Checklist item 1 remains unchecked because the agreed verification command has not passed.
+- The code checkpoint is preserved as Revival-foundation.zip.

@@ -1,0 +1,29 @@
+# JavaScript
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyc
+
+# Secrets and local state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+
+# Runtime artifacts
+artifacts/
+tmp/
