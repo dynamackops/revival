@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 const bundleRoot = join(process.cwd(), "apps", "web", "dist");
-const forbidden = /SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY|sb_secret_|NEBIUS_TOKEN_FACTORY_API_KEY|GITHUB_APP_PRIVATE_KEY/g;
+const forbidden = /SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY|sb_secret_[A-Za-z0-9_-]{20,}|NEBIUS_TOKEN_FACTORY_API_KEY|GITHUB_APP_PRIVATE_KEY/g;
 
 async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });

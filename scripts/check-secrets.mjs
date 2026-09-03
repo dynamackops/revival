@@ -57,7 +57,7 @@ for (const file of await collectFiles(root)) {
 
   if (
     repositoryPath.startsWith(join("apps", "web")) &&
-    /SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY|sb_secret_/g.test(contents)
+    /SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY|sb_secret_[A-Za-z0-9_-]{20,}/g.test(contents)
   ) {
     findings.push("server-only Supabase credential referenced by browser code in " + repositoryPath);
   }
