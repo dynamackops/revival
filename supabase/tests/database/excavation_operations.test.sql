@@ -59,22 +59,22 @@ select results_eq(
   'duplicate click creates exactly one operation'
 );
 select results_eq(
-  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'running', 'Examining project structure', 45, 'collecting_evidence') from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
+  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'running', 'Examining project structure', 45::smallint, 'collecting_evidence') from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
   array[true],
   'the worker can advance owned progress'
 );
 select results_eq(
-  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'running', 'Recovering documentation', 20, 'collecting_evidence') from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
+  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'running', 'Recovering documentation', 20::smallint, 'collecting_evidence') from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
   array[false],
   'stale workers cannot move progress backwards'
 );
 select results_eq(
-  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'completed', 'Evidence recovered', 100, 'reconstructing') from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
+  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'completed', 'Evidence recovered', 100::smallint, 'reconstructing') from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
   array[true],
   'the evidence operation can complete while model reconstruction remains pending'
 );
 select results_eq(
-  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'failed', 'Late worker failure', 100, 'failed', 'late_failure', true) from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
+  $$select public.excavation_progress('44444444-4444-4444-8444-444444444444', id, 'failed', 'Late worker failure', 100::smallint, 'failed', 'late_failure', true) from public.operations where repository_id = '44444444-bbbb-4444-8444-444444444444'$$,
   array[false],
   'a late worker cannot overwrite a terminal operation'
 );
