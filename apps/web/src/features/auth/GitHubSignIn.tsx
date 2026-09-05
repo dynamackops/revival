@@ -5,7 +5,7 @@ import {
   hasSupabaseBrowserConfiguration,
 } from "../../lib/supabase/client";
 
-export function GitHubSignIn() {
+export function GitHubSignIn({ label = "Continue with GitHub" }: { label?: string }) {
   const configured = hasSupabaseBrowserConfiguration();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
@@ -36,10 +36,10 @@ export function GitHubSignIn() {
   return (
     <div className="auth-control">
       <button type="button" disabled={!configured || pending} onClick={signIn}>
-        {pending ? "Opening GitHub…" : "Continue with GitHub"}
+        {pending ? "Opening GitHub…" : label}
       </button>
       {!configured ? (
-        <p className="auth-note">Supabase connection pending</p>
+        <p className="auth-note">GitHub connection is being prepared</p>
       ) : null}
       {error ? <p role="alert">{error}</p> : null}
     </div>

@@ -107,3 +107,15 @@
 - Added FastAPI bearer authentication using Supabase's asymmetric JWKS endpoint, strict issuer and audience checks, allowed signing algorithms, and verified UUID subjects.
 - GitHub Actions run 33751571389 passed the web, Python, database lint, and two-user Supabase jobs for commit ac1b4088d56d6aa57b4f8269b1631a4ac222dfd2.
 - Live GitHub social-login verification remains pending because no Revival Supabase project has been selected or created. Existing connected projects were not reused because they belong to other applications.
+
+## 2026-09-04 — How I Build And Lab Shell Candidate
+
+- Added a working **Enter the Lab** action to the Revival startup terminal.
+- Built a four-stage pre-auth How I Build interview covering project types, preferred tools, MVP size, planning, testing, product priorities, and repair/simplify/experiment instincts.
+- Added typed answers, browser-native dictation when available, a reconstruction review, local persistence across refreshes, and stable memory IDs for idempotent account transfer.
+- Connected completed onboarding data to the existing RLS-protected `profiles` and `creator_memories` tables after Supabase authentication; the browser retains the local copy if sync fails.
+- Built the first retro digital-archaeology lab shell with **Welcome back**, an honest empty artifact bay, **Connect GitHub**, **Connect later**, and editable Creator Memory.
+- Added a Netlify SPA redirect so the Supabase OAuth callback can return to the React application.
+- Verified the live Revival Supabase project still has RLS enabled on all ten public tables. Supabase advisors reported no warning- or error-level security findings; informational private-schema and unused-index notices are expected for the empty pre-launch database.
+- Local verification passed: secret scan, TypeScript type-check, five frontend tests, production build, and browser-bundle credential guard.
+- Visual review remains pending, so checklist item 4 is not marked complete yet.
