@@ -125,7 +125,7 @@ export function useGitHubAppConnection(session: Session | null) {
         });
         setAddFeedback(
           result.alreadyCatalogued
-            ? `${repository.fullName} is already catalogued.`
+            ? `${repository.fullName} is already catalogued. GitHub access has been refreshed.`
             : `${repository.fullName} was added as an Unexamined Artifact.`,
         );
         await catalogued.refresh();
