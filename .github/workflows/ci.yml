@@ -72,3 +72,6 @@ jobs:
         # explicitly too so npm: specifiers resolve regardless.
         working-directory: supabase/functions/github-app
         run: deno test --allow-env --allow-net --node-modules-dir=auto .
+      - name: Run excavation Edge Function tests
+        working-directory: supabase/functions/excavation
+        run: deno test --allow-env --allow-net --node-modules-dir=auto .

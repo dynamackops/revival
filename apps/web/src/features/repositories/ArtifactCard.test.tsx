@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { ArtifactCard } from "./ArtifactCard";
 import type { CataloguedRepository } from "./types";
@@ -25,11 +25,37 @@ describe("ArtifactCard", () => {
     expect(screen.getByText(/Dormant 1 month/)).toBeInTheDocument();
   });
 
-  it("shows a visible but disabled Excavate action with an honest explanation", () => {
-    render(<ArtifactCard repository={baseRepository} />);
+  it("offers a working Excavate action with an evidence-only explanation", () => {
+    const onExcavate = vi.fn();
+    render(<ArtifactCard repository={baseRepository} onExcavate={onExcavate} />);
     const button = screen.getByRole("button", { name: "Excavate" });
-    expect(button).toBeDisabled();
-    expect(screen.getByText(/Excavation is the next stage/)).toBeInTheDocument();
+    expect(button).toBeEnabled();
+    expect(screen.getByText(/Recover documentation, structure, and history/)).toBeInTheDocument();
+    fireEvent.click(button);
+    expect(onExcavate).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers to resume a persisted operation", () => {
+    render(
+      <ArtifactCard
+        repository={{ ...baseRepository, status: "revival_in_progress" }}
+        operation={{
+          id: "op-1",
+          excavationId: "exc-1",
+          repositoryId: baseRepository.id,
+          state: "running",
+          progressStage: "Tracing project history",
+          progressPercent: 70,
+          errorCode: null,
+          retryable: false,
+          presentationSeen: true,
+          updatedAt: "2026-09-05T00:00:00.000Z",
+        }}
+        onExcavate={() => {}}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Resume Scan" })).toBeInTheDocument();
+    expect(screen.getByText("Tracing project history")).toBeInTheDocument();
   });
 
   it("does not offer Excavate for a repository past the unexamined stage", () => {
