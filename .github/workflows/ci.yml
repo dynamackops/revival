@@ -65,4 +65,10 @@ jobs:
         with:
           deno-version: v2.x
       - name: Run github-app Edge Function tests
-        run: deno test --allow-env --allow-net supabase/functions/github-app/
+        # Run from inside the function's own directory so Deno's config
+        # discovery (which walks up from the current working directory, not
+        # down into the test path) finds deno.json and its
+        # nodeModulesDir setting; --node-modules-dir=auto is passed
+        # explicitly too so npm: specifiers resolve regardless.
+        working-directory: supabase/functions/github-app
+        run: deno test --allow-env --allow-net --node-modules-dir=auto .
