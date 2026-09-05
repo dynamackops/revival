@@ -3,6 +3,8 @@ import { useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { GitHubSignIn } from "../auth/GitHubSignIn";
+import { ExcavationScanner } from "../excavation/ExcavationScanner";
+import { useExcavationOperations } from "../excavation/useExcavationOperations";
 import { humanize, type HowIBuildProfile } from "../onboarding/howIBuild";
 import { ArtifactCard } from "../repositories/ArtifactCard";
 import { RepositoryPicker } from "../repositories/RepositoryPicker";
@@ -21,6 +23,14 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
   const [connectionDeferred, setConnectionDeferred] = useState(false);
   const connection = useGitHubAppConnection(session);
   const hasArtifacts = connection.cataloguedRepositories.length > 0;
+  const [focusedRepositoryId, setFocusedRepositoryId] = useState<string | null>(null);
+  const excavation = useExcavationOperations(
+    session?.user.id,
+    connection.cataloguedRepositories.map((repository) => repository.id),
+  );
+  const focusedRepository = connection.cataloguedRepositories.find(
+    (repository) => repository.id === focusedRepositoryId,
+  );
   const existingRepositoryIds = new Set(
     connection.cataloguedRepositories.map((repository) => repository.githubRepositoryId),
   );
@@ -59,52 +69,72 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
         </div>
         <div className="lab-computer">
           <div className="computer-screen">
-            <p>REVIVAL TERMINAL · {hasArtifacts ? "ARTIFACTS CATALOGUED" : "AWAITING ARTIFACT"}</p>
-            <h2 id="dig-site-title">
-              {session
-                ? hasArtifacts
-                  ? "Return anytime to add another repository."
-                  : "Choose repository access to begin."
-                : "Connect to GitHub to revive your first project."}
-            </h2>
-            <p className="screen-copy">
-              Your repositories stay untouched until you approve an excavation and any proposed work.
-            </p>
-            {!session && !connectionDeferred ? (
-              <div className="connection-actions">
-                <GitHubSignIn label="Connect GitHub" />
-                <button className="connect-later" type="button" onClick={() => setConnectionDeferred(true)}>
-                  Connect later
-                </button>
-              </div>
-            ) : !session ? (
-              <div className="connection-actions deferred-message">
-                <span>No problem. The lab will wait.</span>
-                <GitHubSignIn label="Connect whenever you’re ready" />
-              </div>
+            {focusedRepository ? (
+              <ExcavationScanner
+                creatorName={name}
+                repository={focusedRepository}
+                operation={excavation.operations[focusedRepository.id]}
+                starting={excavation.startingRepositoryId === focusedRepository.id}
+                error={excavation.error}
+                onStart={() => { void excavation.start(focusedRepository.id); }}
+                onSkip={() => setFocusedRepositoryId(null)}
+                onPresentationSeen={() => {
+                  const operation = excavation.operations[focusedRepository.id];
+                  if (operation) {
+                    void excavation.markPresentationSeen(focusedRepository.id, operation.excavationId);
+                  }
+                }}
+              />
             ) : (
-              <div className="connection-actions">
-                <button
-                  className="primary-button"
-                  type="button"
-                  disabled={connection.connecting}
-                  onClick={() => {
-                    if (hasArtifacts) connection.openPicker();
-                    else void connection.chooseRepositoryAccess();
-                  }}
-                >
-                  {connection.connecting
-                    ? "Opening GitHub…"
-                    : hasArtifacts
-                      ? "Add repositories"
-                      : "Choose Repository Access"}
-                </button>
-                {!hasArtifacts ? (
-                  <button className="connect-later" type="button" onClick={connection.openPicker}>
-                    Already installed the app? Add repositories
-                  </button>
-                ) : null}
-              </div>
+              <>
+                <p>REVIVAL TERMINAL · {hasArtifacts ? "ARTIFACTS CATALOGUED" : "AWAITING ARTIFACT"}</p>
+                <h2 id="dig-site-title">
+                  {session
+                    ? hasArtifacts
+                      ? "Return anytime to add another repository."
+                      : "Choose repository access to begin."
+                    : "Connect to GitHub to revive your first project."}
+                </h2>
+                <p className="screen-copy">
+                  Your repositories stay untouched until you approve an excavation and any proposed work.
+                </p>
+                {!session && !connectionDeferred ? (
+                  <div className="connection-actions">
+                    <GitHubSignIn label="Connect GitHub" />
+                    <button className="connect-later" type="button" onClick={() => setConnectionDeferred(true)}>
+                      Connect later
+                    </button>
+                  </div>
+                ) : !session ? (
+                  <div className="connection-actions deferred-message">
+                    <span>No problem. The lab will wait.</span>
+                    <GitHubSignIn label="Connect whenever you’re ready" />
+                  </div>
+                ) : (
+                  <div className="connection-actions">
+                    <button
+                      className="primary-button"
+                      type="button"
+                      disabled={connection.connecting}
+                      onClick={() => {
+                        if (hasArtifacts) connection.openPicker();
+                        else void connection.chooseRepositoryAccess();
+                      }}
+                    >
+                      {connection.connecting
+                        ? "Opening GitHub…"
+                        : hasArtifacts
+                          ? "Add repositories"
+                          : "Choose Repository Access"}
+                    </button>
+                    {!hasArtifacts ? (
+                      <button className="connect-later" type="button" onClick={connection.openPicker}>
+                        Already installed the app? Add repositories
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div className="computer-base" aria-hidden="true"><span /></div>
@@ -113,7 +143,24 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
         {hasArtifacts ? (
           <div className="artifact-grid">
             {connection.cataloguedRepositories.map((repository) => (
-              <ArtifactCard key={repository.id} repository={repository} />
+              <ArtifactCard
+                key={repository.id}
+                repository={repository}
+                operation={excavation.operations[repository.id]}
+                starting={excavation.startingRepositoryId === repository.id}
+                onExcavate={() => {
+                  setFocusedRepositoryId(repository.id);
+                  const operation = excavation.operations[repository.id];
+                  if (
+                    !operation
+                    || operation.state === "queued"
+                    || operation.state === "running"
+                    || (operation.state === "failed" && operation.retryable)
+                  ) {
+                    void excavation.start(repository.id);
+                  }
+                }}
+              />
             ))}
           </div>
         ) : (
