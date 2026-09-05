@@ -1,0 +1,25 @@
+# The application is not at the repository root: the pnpm workspace lives in
+# the nested `Revival-foundation/` directory, so the build runs from there.
+# `command` and `publish` are relative to that base directory.
+#
+# The build image did not provide a `pnpm` binary (the build failed with
+# "pnpm: command not found" even though `Revival-foundation/pnpm-lock.yaml` is
+# committed), so the build bootstraps pnpm itself instead of relying on the
+# build image's package-manager detection:
+#   1. `corepack enable pnpm` installs a pnpm shim on PATH. Corepack ships with
+#      Node, and it pins the version from the `packageManager` field in the
+#      workspace root package.json.
+#   2. `pnpm install --frozen-lockfile` installs the workspace dependencies
+#      from the committed lockfile, because the automatic dependency install
+#      falls back to npm and therefore installs nothing for this workspace.
+#   3. `pnpm --filter @revival/web build` builds only the web app.
+[build]
+  base = "Revival-foundation"
+  command = "corepack enable pnpm && pnpm install --frozen-lockfile && pnpm --filter @revival/web build"
+  publish = "apps/web/dist"
+
+[build.environment]
+  # The workspace requires Node >= 24 (root package.json `engines.node`).
+  NODE_VERSION = "24"
+  # Let Corepack fetch the pinned pnpm version without waiting on a prompt.
+  COREPACK_ENABLE_DOWNLOAD_PROMPT = "0"
