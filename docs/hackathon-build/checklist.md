@@ -38,7 +38,7 @@ Status: Locked for autonomous implementation with visual review pauses.
   Acceptance: How I Build occurs before GitHub; its questions cover frameworks, project types, MVP size, planning, testing, product priorities, and repair/simplify/experiment preferences; choosing Connect Later preserves the profile and allows Settings access.
   Verify: Run component and end-to-end tests for onboarding, refresh, sign-in transfer, editing, and Connect Later; pause for Jasmine's first visual review of the lab, typography, artifact language, and emotional tone before continuing.
 
-- [ ] **5. Add intentional GitHub access and the artifact dashboard**
+- [x] **5. Add intentional GitHub access and the artifact dashboard**
   Spec ref: `spec.md > 6. Core API Contracts > 6.1 GitHub and repository endpoints`
   What to build: Register the GitHub App flow separately from social sign-in, explain read versus approved write access, provide searchable selected-repository access, and add manual repository curation. Render each selected repository as a bone-like card with name, latest commit, dormant duration, visibility, lifecycle status, and Excavate action.
   Acceptance: No repository is added automatically or twice; both public and private selected repositories work; cards support several projects and show Unexamined Artifact, Revival in Progress, Rescoped, Preserved, or Revived; revoked access preserves prior reports.
