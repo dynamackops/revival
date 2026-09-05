@@ -65,9 +65,12 @@ describe("RepositoryPicker", () => {
     expect(props.onStartInstall).toHaveBeenCalledTimes(1);
   });
 
-  it("shows an empty state when the installation has no authorized repositories", () => {
-    render(<RepositoryPicker {...baseProps()} repositories={[]} />);
-    expect(screen.getByText(/GitHub reports no repositories are authorized/)).toBeInTheDocument();
+  it("shows a reconnect action when the installation has no authorized repositories", () => {
+    const props = baseProps();
+    render(<RepositoryPicker {...props} repositories={[]} />);
+    expect(screen.getByText(/GitHub reports no repositories are currently authorized/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Choose Repository Access" }));
+    expect(props.onStartInstall).toHaveBeenCalledTimes(1);
   });
 
   it("filters the list by search query", () => {

@@ -103,10 +103,17 @@ export function RepositoryPicker({
         ) : null}
 
         {!loading && !error && hasInstallation && repositories.length === 0 ? (
-          <p className="picker-state">
-            GitHub reports no repositories are authorized yet. Reopen the GitHub installation
-            settings to select at least one repository, then return here.
-          </p>
+          <div className="picker-state">
+            <p>
+              GitHub reports no repositories are currently authorized. This usually means the
+              installation was revoked or uninstalled, or no repositories are selected for it.
+              Choose Repository Access to reconnect, or reopen the GitHub installation settings to
+              select at least one repository and return here.
+            </p>
+            <button type="button" className="primary-button" onClick={onStartInstall}>
+              Choose Repository Access
+            </button>
+          </div>
         ) : null}
 
         {!loading && !error && hasInstallation && repositories.length > 0 && filtered.length === 0 ? (
