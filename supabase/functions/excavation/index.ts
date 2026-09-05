@@ -190,7 +190,10 @@ async function runExcavation(
 }
 
 function scheduleBackground(task: Promise<void>): void {
-  EdgeRuntime.waitUntil(task);
+  const runtime = globalThis as typeof globalThis & {
+    EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
+  };
+  runtime.EdgeRuntime.waitUntil(task);
 }
 
 async function startExcavation(
