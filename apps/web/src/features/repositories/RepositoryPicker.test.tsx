@@ -101,15 +101,28 @@ describe("RepositoryPicker", () => {
     expect(props.onAdd).toHaveBeenCalledWith(repositories[0]);
   });
 
-  it("disables and labels a repository that is already catalogued", () => {
-    render(<RepositoryPicker {...baseProps()} existingRepositoryIds={new Set([1])} />);
-    const button = screen.getByRole("button", { name: "Already catalogued" });
-    expect(button).toBeDisabled();
+  it("still allows reconnecting an already-catalogued repository", () => {
+    // A repository can go stale (e.g. the GitHub App was uninstalled and
+    // reinstalled), so the button must stay clickable rather than being
+    // permanently disabled once a repository has been added once.
+    const props = baseProps();
+    render(<RepositoryPicker {...props} existingRepositoryIds={new Set([1])} />);
+    const button = screen.getByRole("button", { name: "Reconnect" });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    expect(props.onAdd).toHaveBeenCalledWith(repositories[0]);
   });
 
-  it("shows add feedback such as a duplicate notice", () => {
-    render(<RepositoryPicker {...baseProps()} addFeedback="jasmine/paused-app is already catalogued." />);
-    expect(screen.getByText("jasmine/paused-app is already catalogued.")).toBeInTheDocument();
+  it("shows add feedback such as a refreshed-access notice", () => {
+    render(
+      <RepositoryPicker
+        {...baseProps()}
+        addFeedback="jasmine/paused-app is already catalogued. GitHub access has been refreshed."
+      />,
+    );
+    expect(
+      screen.getByText("jasmine/paused-app is already catalogued. GitHub access has been refreshed."),
+    ).toBeInTheDocument();
   });
 
   it("closes when the backdrop is clicked and not when the panel is clicked", () => {

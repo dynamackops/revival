@@ -137,10 +137,12 @@ export function RepositoryPicker({
                   <button
                     type="button"
                     className="text-button"
-                    disabled={alreadyAdded || isAdding}
+                    disabled={isAdding}
                     onClick={() => onAdd(repository)}
                   >
-                    {alreadyAdded ? "Already catalogued" : isAdding ? "Adding…" : "Add to dig site"}
+                    {isAdding
+                      ? alreadyAdded ? "Reconnecting…" : "Adding…"
+                      : alreadyAdded ? "Reconnect" : "Add to dig site"}
                   </button>
                 </li>
               );
