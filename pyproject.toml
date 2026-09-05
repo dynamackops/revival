@@ -1,0 +1,44 @@
+[project]
+name = "revival-backend"
+version = "0.1.0"
+description = "Revival control API and background workers"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "PyJWT[crypto]==2.10.1",
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28,<1",
+  "mypy>=1.14,<2",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.25,<1",
+  "ruff>=0.9,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["services/control-api", "services/workers"]
+testpaths = ["services/control-api/tests", "services/workers/tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "revival_workers"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["services/control-api/app", "services/workers"]

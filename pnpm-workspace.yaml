@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+  - packages/*
+
+# pnpm 11 blocks dependency build scripts unless they are approved here.
+allowBuilds:
+  esbuild: true

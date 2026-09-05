@@ -1,0 +1,23 @@
+{
+  "name": "revival",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bring this project back to life.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @revival/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint && uv run ruff check services",
+    "test:web": "pnpm -r --if-present test",
+    "test:python": "uv run pytest",
+    "test": "pnpm test:web && pnpm test:python",
+    "secrets:check": "node scripts/check-secrets.mjs",
+    "bundle:check": "node scripts/check-client-bundle.mjs",
+    "check": "pnpm secrets:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+  }
+}

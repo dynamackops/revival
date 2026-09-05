@@ -1,0 +1,10 @@
+project_id = "revival"
+
+[db]
+major_version = 17
+
+[studio]
+enabled = false
+
+[inbucket]
+enabled = false

@@ -11,8 +11,9 @@ Sandbox after explicit approval.
 ## Current status
 
 The hackathon implementation is being built from the documents in
-docs/hackathon-build. The first milestone establishes the workspace, contracts,
-environment boundaries, and continuous-integration checks.
+docs/hackathon-build. The workspace foundation is verified, and the current milestone
+adds Supabase Auth, an ownership-isolated product schema, and server-side JWT
+verification.
 
 ## Architecture
 
@@ -26,12 +27,18 @@ environment boundaries, and continuous-integration checks.
 
 ## Local setup
 
-Requirements: Node 24+, pnpm 11+, Python 3.12+, and uv.
+Requirements: Node 24+, pnpm 11+, Python 3.12+, uv, Docker, and the Supabase CLI.
 
     cp .env.example .env
     pnpm install
     uv sync
     pnpm check
+
+Start the local Supabase stack and run the database policy tests:
+
+    supabase start
+    supabase db lint --local --level warning
+    supabase test db
 
 Run the web client:
 
@@ -43,6 +50,11 @@ Run the API:
 
 Never place service-role, GitHub App, or Nebius credentials in variables prefixed
 with VITE_. Full repository contents will be processed only in disposable sandboxes.
+
+`VITE_SUPABASE_PUBLISHABLE_KEY` is the only Supabase key used by the browser.
+`SUPABASE_SERVICE_ROLE_KEY` is reserved for server-side jobs. Account sign-in uses
+Supabase's GitHub provider; repository access will use a separate least-privilege
+GitHub App so identity and code permissions stay independently revocable.
 
 ## Hackathon technology
 
