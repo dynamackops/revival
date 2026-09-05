@@ -12,7 +12,7 @@
     "dev": "pnpm --filter @revival/web dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
-    "lint": "pnpm -r --if-present lint && uv run ruff check services",
+    "lint": "pnpm -r --if-present lint && uv run ruff check services scripts",
     "test:web": "pnpm -r --if-present test",
     "test:python": "uv run pytest",
     "test": "pnpm test:web && pnpm test:python",
