@@ -162,6 +162,35 @@ input::placeholder, textarea::placeholder { color: #6f6757; }
 .memory-grid.compact { grid-template-columns: 1fr; margin: 2rem 0; }
 .close-button { border: 0; padding: 0; color: var(--muted); background: transparent; font-size: 2rem; cursor: pointer; }
 
+.connection-banner { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; max-width: 78rem; margin: 0.5rem auto 0; padding: 0.85rem 1.1rem; border: 1px solid var(--line); background: #15120e; font-size: 0.72rem; line-height: 1.6; }
+.connection-banner p { margin: 0; color: var(--muted); }
+.connection-banner[data-tone="success"] { border-color: var(--green); }
+.connection-banner[data-tone="success"] p { color: #c9ecc5; }
+.connection-banner[data-tone="error"] { border-color: #b06a52; }
+.connection-banner[data-tone="error"] p { color: #e3b09b; }
+.connection-banner[data-tone="info"] p { color: var(--gold); }
+.connection-banner .close-button { font-size: 1.3rem; }
+
+.artifact-grid { position: relative; z-index: 2; width: 100%; max-width: 78rem; margin: 2.5rem auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1.1rem; }
+.artifact-card { position: relative; display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.3rem; border: 1px solid #453c2b; background: #100e0a; box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 35%); }
+.artifact-bone { position: absolute; top: 0.9rem; right: 1rem; width: 1.6rem; height: 0.55rem; border-radius: 999px; background: linear-gradient(90deg, #b9a97a, #efe3c3, #b9a97a); box-shadow: -0.55rem 0 0 -0.15rem #b9a97a, 0.55rem 0 0 -0.15rem #b9a97a; opacity: 0.7; }
+.artifact-visibility { margin: 0; color: var(--gold); font-size: 0.6rem; letter-spacing: 0.09em; text-transform: uppercase; }
+.artifact-card h3 { margin: 0.25rem 0 0; font: 400 1.15rem/1.35 "Libre Caslon Display", Georgia, serif; color: var(--ink); word-break: break-word; }
+.artifact-meta { margin: 0; color: var(--muted); font-size: 0.68rem; line-height: 1.6; }
+.artifact-status { margin: 0.2rem 0 0.4rem; color: #d8ccb0; font-size: 0.68rem; letter-spacing: 0.04em; }
+.artifact-card .primary-button { min-height: 2.3rem; padding: 0.5rem 0.9rem; font-size: 0.68rem; }
+.artifact-note { margin: 0.5rem 0 0; color: #746a58; font-size: 0.6rem; line-height: 1.6; }
+
+.repository-picker { width: min(40rem, 94vw); max-height: 88vh; padding: clamp(1.5rem, 5vw, 2.5rem); overflow-y: auto; border-left: 1px solid var(--line); background: #15120e; box-shadow: -2rem 0 6rem #000; animation: drawer-in 260ms ease-out both; margin-left: auto; }
+.picker-copy { margin: 0.4rem 0 1.4rem; color: var(--muted); font-size: 0.72rem; line-height: 1.7; }
+.picker-state { display: grid; gap: 0.7rem; margin: 1.2rem 0; padding: 1rem; border: 1px solid #3a3222; color: var(--muted); font-size: 0.72rem; line-height: 1.7; background: #100e0a; }
+.picker-feedback { margin: 0 0 1rem; padding: 0.6rem 0.9rem; border-left: 2px solid var(--green); color: #c9ecc5; font-size: 0.7rem; background: #10160f; }
+.repository-list { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.repository-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; border: 1px solid #332c20; background: #100e0a; }
+.repository-name { margin: 0; color: var(--ink); font-size: 0.78rem; }
+.repository-meta { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.64rem; }
+.repository-row .text-button { flex-shrink: 0; text-decoration: none; }
+
 @keyframes terminal-arrival { from { opacity: 0; transform: translateY(18px) scale(0.98); } }
 @keyframes card-arrival { from { opacity: 0; transform: translateY(8px); } }
 @keyframes drawer-in { from { transform: translateX(100%); } }

@@ -56,3 +56,13 @@ jobs:
       - name: Stop local Supabase
         if: always()
         run: npx --yes supabase@2.116.0 stop --no-backup
+
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run github-app Edge Function tests
+        run: deno test --allow-env --allow-net supabase/functions/github-app/

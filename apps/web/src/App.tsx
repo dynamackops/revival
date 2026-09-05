@@ -22,7 +22,9 @@ export function App() {
   const [profile, setProfile] = useState<HowIBuildProfile>(() =>
     loadHowIBuildProfile() ?? createEmptyProfile(),
   );
-  const [view, setView] = useState<View>(profile.completedAt ? "lab" : "landing");
+  const [view, setView] = useState<View>(
+    window.location.pathname === "/github/callback" || profile.completedAt ? "lab" : "landing",
+  );
   const [session, setSession] = useState<Session | null>(null);
   const [syncState, setSyncState] = useState<"device" | "syncing" | "synced" | "error">(
     "device",
