@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(12);
 
 insert into auth.users (id, email)
 values ('33333333-3333-4333-8333-333333333333', 'revival-github-app@example.test');
