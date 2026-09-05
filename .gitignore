@@ -1,8 +1,10 @@
-# JavaScript
+# JavaScript dependencies and output
 node_modules/
+.pnpm-store/
 dist/
 .vite/
 coverage/
+*.tsbuildinfo
 
 # Python
 .venv/
@@ -10,7 +12,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-*.pyc
+*.py[cod]
 
 # Secrets and local state
 .env

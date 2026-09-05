@@ -20,7 +20,7 @@ Status: Locked for autonomous implementation with visual review pauses.
   Acceptance: The repository visibly separates the browser, control API, workers, contracts, prompts, evaluations, Supabase migrations, and documentation; no secret or provider credential is committed.
   Verify: Run `pnpm install && pnpm -r typecheck`, `uv run pytest`, and a secret-pattern scan; confirm CI can invoke both stacks.
 
-- [ ] **2. Create the Supabase foundation and prove ownership isolation**
+- [x] **2. Create the Supabase foundation and prove ownership isolation**
   Spec ref: `spec.md > 5. Data Model > 5.1 Public user-owned tables`
   What to build: Add migrations for profiles, Creator Memory, repositories, excavations, findings, paths, operations, Time Capsules, and badges; add the private server-only schema, private artifact bucket, indexes, status constraints, triggers, and RLS policies. Wire Supabase GitHub social login into the web shell and JWT verification into FastAPI.
   Acceptance: A user can authenticate, but cannot read or mutate another user's rows or Storage objects; service credentials remain server-only; every exposed table is protected by RLS.
@@ -32,7 +32,7 @@ Status: Locked for autonomous implementation with visual review pauses.
   Acceptance: The implementation uses at least one eligible NVIDIA open-source model on Nebius; sandbox code execution is real rather than mocked; public and private repository access can be authorized without granting access to every repository.
   Verify: Save redacted command output and provider IDs under `docs/architecture/integration-spike.md`; rerun the spike from a clean environment and confirm it returns a validated model response, sandbox diff, and authorized repository metadata.
 
-- [ ] **4. Build How I Build and the first digital-archaeology lab shell**
+- [x] **4. Build How I Build and the first digital-archaeology lab shell**
   Spec ref: `spec.md > 7. Main Data Flows > 7.1 Onboarding before authentication`
   What to build: Create the pre-auth How I Build flow with typed and browser-dictated answers, review/edit screen, local-to-account transfer, Welcome back return state, retro lab dashboard, Settings entry, and Connect GitHub or Connect Later choice. The disconnected lab must show the computer prompt without fake repositories.
   Acceptance: How I Build occurs before GitHub; its questions cover frameworks, project types, MVP size, planning, testing, product priorities, and repair/simplify/experiment preferences; choosing Connect Later preserves the profile and allows Settings access.

@@ -119,3 +119,12 @@
 - Verified the live Revival Supabase project still has RLS enabled on all ten public tables. Supabase advisors reported no warning- or error-level security findings; informational private-schema and unused-index notices are expected for the empty pre-launch database.
 - Local verification passed: secret scan, TypeScript type-check, five frontend tests, production build, and browser-bundle credential guard.
 - Visual review remains pending, so checklist item 4 is not marked complete yet.
+
+## 2026-09-05 — Foundation Auth And Lab Visual Checkpoint Approved
+
+- Jasmine confirmed that GitHub authentication works after correcting the GitHub OAuth callback configuration.
+- This closes checklist item 2: the live Supabase GitHub sign-in now completes, complementing the already-passing two-user RLS, server credential, and browser bundle checks.
+- Jasmine approved the How I Build and digital-archaeology lab visuals, typography, artifact language, and emotional tone.
+- This closes checklist item 4 and establishes the **revival-lab-shell** visual checkpoint.
+- Reconciled PR #1 with the newer Netlify configuration on `main`: retained the normalized root workspace, preserved Node 24 and Corepack bootstrapping, kept the SPA redirect, and limited Netlify's scan exception to the browser-safe Supabase publishable key.
+- Checklist item 3 remains the next uncompleted implementation gate because the live Nebius Token Factory, Sandbox, Serverless adapter, and GitHub App repository spike has not yet been completed.
