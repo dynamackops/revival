@@ -2,6 +2,11 @@
   command = "pnpm --filter @revival/web build"
   publish = "apps/web/dist"
 
+[build.environment]
+  # This publishable browser key is intentionally embedded by Vite.
+  # Keep Netlify's scanning enabled for every other environment variable.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_PUBLISHABLE_KEY"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
