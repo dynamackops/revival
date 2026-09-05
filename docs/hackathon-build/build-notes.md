@@ -175,3 +175,55 @@
   organization and a deployed Supabase project, none of which has happened yet. See
   `docs/github-app-setup.md` for the exact GitHub App configuration and the secrets Jasmine
   needs to provide (by file path, never pasted into chat) before that live verification can run.
+
+## 2026-09-05 — Live Verification Completed; Checklist Item 5 Closed
+
+- Jasmine set the four Supabase secrets (`GITHUB_APP_ID`, `GITHUB_APP_SLUG`,
+  `GITHUB_APP_STATE_SECRET`, `GITHUB_APP_PRIVATE_KEY`) via the Supabase dashboard and the
+  `github-app` migration and Edge Function were deployed to the live Revival Supabase project
+  (`mojnnbffzqsblsigwfqo`). One deployment-time bug surfaced and was fixed: pasting a multi-line
+  `.pem` into the Supabase secret field silently stripped the newlines a PEM key needs, which
+  broke `jsonwebtoken`'s RS256 signing (`secretOrPrivateKey must be an asymmetric key when using
+  RS256`). Worked around by having Jasmine convert the key to one line with literal `\n`
+  escapes before pasting (`awk '{printf "%s\\n", $0}' key.pem`), which the Edge Function's
+  `createAppJwt` already normalizes back to real newlines.
+- Every flow named in checklist item 5's verify step was exercised live against the real
+  `dynamackops/revivalcode` GitHub App and the production Supabase project, using
+  `dynamackops/lingua-quest`, `dynamackops/MuseFlow-Studio`, and the private
+  `dynamackops/Signl-Cycle` as test repositories:
+  - **Install**: Choose Repository Access → GitHub's "Only select repositories" screen →
+    `/github/callback` → automatic repository picker. Confirmed correct on a second attempt
+    after two real bugs were found and fixed (see below).
+  - **Selected-repository / public repository**: the picker listed exactly the repositories
+    selected during installation, with real last-commit dates and computed dormant duration.
+  - **Private repository**: adding a private repository correctly labeled the resulting card
+    "Private repository" with accurate metadata.
+  - **Duplicate-add**: re-adding an already-catalogued repository showed "Already catalogued"
+    and did not create a second row or card.
+  - **Revoke**: uninstalling the GitHub App preserved all three existing catalogued repository
+    cards untouched, and the picker honestly reported that no repositories are currently
+    authorized rather than showing stale data.
+  - **Reconnect**: found a real gap during this test — the "no repositories authorized" state
+    (which is exactly what an uninstalled-but-still-recorded installation looks like) offered no
+    way to reinstall from inside Revival, unlike the "no installation at all" state. Fixed in
+    `RepositoryPicker.tsx` by adding the same Choose Repository Access action to that state
+    (PR #5), then verified live via the Netlify deploy preview.
+  - **Cancel**: starting a fresh install and clicking Cancel on GitHub's screen returns cleanly
+    to Revival with no error and no change to catalogued repositories.
+- Two real bugs were found and fixed via GitHub Actions CI logs on PR #4 before merge (pgTAP
+  `plan(11)` vs. 12 actual assertions in `github_app_functions.test.sql`; Deno's config discovery
+  not finding `supabase/functions/github-app/deno.json` when `deno test` ran from the repo root,
+  fixed by running from the function's own directory with `--node-modules-dir=auto`). Both
+  `supabase test db` and `deno test` now pass for real in CI, closing out the two checks that
+  could not run in the local build environment.
+- Checklist item 5 (Add intentional GitHub access and the artifact dashboard) is now marked
+  **complete** in `checklist.md`: every flow in its verify step passed against the real GitHub
+  App and Supabase project, not just local or mocked tests.
+- Follow-up, not blocking: the GitHub App's live permissions currently include broader scopes
+  than `docs/github-app-setup.md` specifies (actions, administration, agent secrets, agent tasks,
+  in addition to metadata/contents/pull requests/issues). Jasmine should tighten these back down
+  in the GitHub App settings when convenient. Also noted but not yet root-caused: an
+  "Installation was canceled" banner appeared once alongside an otherwise-successful repository
+  add, most likely from a stale `/github/callback` URL revisited via browser history rather than
+  a real installation attempt — worth hardening later so that route only acts on a fresh,
+  single-use navigation.
