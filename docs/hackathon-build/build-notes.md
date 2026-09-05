@@ -128,3 +128,50 @@
 - This closes checklist item 4 and establishes the **revival-lab-shell** visual checkpoint.
 - Reconciled PR #1 with the newer Netlify configuration on `main`: retained the normalized root workspace, preserved Node 24 and Corepack bootstrapping, kept the SPA redirect, and limited Netlify's scan exception to the browser-safe Supabase publishable key.
 - Checklist item 3 remains the next uncompleted implementation gate because the live Nebius Token Factory, Sandbox, Serverless adapter, and GitHub App repository spike has not yet been completed.
+
+## 2026-09-05 — Repository Connection Built Independently Of Nebius
+
+- Jasmine intentionally paused Nebius Token Factory / Sandbox setup because it requires adding a
+  billing card, and chose to move forward with real GitHub repository connection first rather
+  than block the dig-site dashboard on that decision. Checklist item 3 (the live Nemotron,
+  Sandbox, and Serverless spike) remains explicitly unchecked; nothing here substitutes for it.
+- Implemented the GitHub App installation and repository-selection flow as a standalone
+  Supabase Edge Function (`supabase/functions/github-app`) with four actions:
+  `create-install-url`, `complete-installation`, `list-authorized-repositories`, and
+  `add-repository`. This runs independently of the Nebius control API so the dashboard's
+  repository connection is real today rather than blocked on Nebius billing.
+- Added a new migration (`supabase/migrations/20260905090000_github_app_repository_functions.sql`)
+  with four narrowly scoped `SECURITY DEFINER` Postgres functions
+  (`github_installation_upsert`, `github_installation_get`, `github_installation_verify`,
+  `repository_add`) so the Edge Function can read and write `private.github_installations` and
+  insert into `public.repositories` without exposing the private schema to the Data API and
+  without granting `authenticated` any new table privileges. Execution is granted only to
+  `service_role` and revoked from `public`, `anon`, and `authenticated`; every function pins an
+  empty `search_path` and validates its own arguments.
+- Replaced the disabled "Repository access is next" button in the lab with a working flow:
+  Choose Repository Access requests a short-lived, user-bound, HMAC-signed state value from the
+  Edge Function, opens GitHub's "Only select repositories" installation screen, and on return to
+  `/github/callback` verifies the state and installation before opening a searchable repository
+  picker. Added repositories render as bone-like Unexamined Artifact cards with a real last
+  commit date, human-readable dormant duration, and a visible (currently disabled, honestly
+  labeled) Excavate action, since excavation itself is not implemented yet.
+- The installation access token and the GitHub App private key are never returned to the
+  browser, logged, or stored; a fresh installation token is minted per request and discarded.
+- Verified locally without Docker or a live Supabase project: applied all three migrations
+  (including the new one) against a throwaway local Postgres 16 database with hand-built `auth`,
+  `storage`, and role stubs, and manually exercised every new function — grants, idempotent
+  upsert, ownership verification, duplicate-repository detection, and the installation-ownership
+  rejection path — all matched the checked-in pgTAP test's expectations. `pnpm check` (secret
+  scan, typecheck, lint, 33 Vitest cases including the new repository-connection suite, 12
+  pytest cases, production build) and the browser-bundle credential guard all passed.
+- Not yet run because this environment has neither a running Docker daemon nor the Deno
+  runtime: `supabase test db` against the real Supabase local stack, `supabase db lint`, and
+  `deno test` for the Edge Function's `state.ts`/`index.ts` unit tests. The SQL and Deno test
+  files are checked in and were designed to be run as part of the existing CI `supabase` job and
+  a new Edge Function CI step; they have not yet executed in a real CI run.
+- Checklist item 5 (Add intentional GitHub access and the artifact dashboard) is **not** marked
+  complete: its verify step requires exercising install, cancel, selected-repository,
+  private-repository, duplicate-add, revoke, and reconnect flows against a real GitHub test
+  organization and a deployed Supabase project, none of which has happened yet. See
+  `docs/github-app-setup.md` for the exact GitHub App configuration and the secrets Jasmine
+  needs to provide (by file path, never pasted into chat) before that live verification can run.

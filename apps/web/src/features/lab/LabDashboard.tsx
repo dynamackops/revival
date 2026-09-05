@@ -4,6 +4,9 @@ import type { Session } from "@supabase/supabase-js";
 
 import { GitHubSignIn } from "../auth/GitHubSignIn";
 import { humanize, type HowIBuildProfile } from "../onboarding/howIBuild";
+import { ArtifactCard } from "../repositories/ArtifactCard";
+import { RepositoryPicker } from "../repositories/RepositoryPicker";
+import { useGitHubAppConnection } from "../repositories/useGitHubAppConnection";
 
 export function LabDashboard({ profile, session, syncState, settingsOpen, onOpenSettings, onCloseSettings, onEditProfile }: {
   profile: HowIBuildProfile;
@@ -16,6 +19,11 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
 }) {
   const name = profile.displayName.trim() || "Creator";
   const [connectionDeferred, setConnectionDeferred] = useState(false);
+  const connection = useGitHubAppConnection(session);
+  const hasArtifacts = connection.cataloguedRepositories.length > 0;
+  const existingRepositoryIds = new Set(
+    connection.cataloguedRepositories.map((repository) => repository.githubRepositoryId),
+  );
 
   return (
     <main className="lab-shell">
@@ -40,6 +48,10 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
         <p>Your dig site is quiet. Nothing has been lost.</p>
       </section>
 
+      {connection.banner ? (
+        <ConnectionBanner banner={connection.banner} onDismiss={connection.dismissBanner} />
+      ) : null}
+
       <section className="dig-site" aria-labelledby="dig-site-title">
         <div className="site-grid" aria-hidden="true" />
         <div className="archaeology-markers" aria-hidden="true">
@@ -47,9 +59,13 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
         </div>
         <div className="lab-computer">
           <div className="computer-screen">
-            <p>REVIVAL TERMINAL · AWAITING ARTIFACT</p>
+            <p>REVIVAL TERMINAL · {hasArtifacts ? "ARTIFACTS CATALOGUED" : "AWAITING ARTIFACT"}</p>
             <h2 id="dig-site-title">
-              {session ? "Choose repository access to begin." : "Connect to GitHub to revive your first project."}
+              {session
+                ? hasArtifacts
+                  ? "Return anytime to add another repository."
+                  : "Choose repository access to begin."
+                : "Connect to GitHub to revive your first project."}
             </h2>
             <p className="screen-copy">
               Your repositories stay untouched until you approve an excavation and any proposed work.
@@ -67,19 +83,57 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
                 <GitHubSignIn label="Connect whenever you’re ready" />
               </div>
             ) : (
-              <button className="primary-button" type="button" disabled>Repository access is next</button>
+              <div className="connection-actions">
+                <button
+                  className="primary-button"
+                  type="button"
+                  disabled={connection.connecting}
+                  onClick={() => {
+                    if (hasArtifacts) connection.openPicker();
+                    else void connection.chooseRepositoryAccess();
+                  }}
+                >
+                  {connection.connecting
+                    ? "Opening GitHub…"
+                    : hasArtifacts
+                      ? "Add repositories"
+                      : "Choose Repository Access"}
+                </button>
+                {!hasArtifacts ? (
+                  <button className="connect-later" type="button" onClick={connection.openPicker}>
+                    Already installed the app? Add repositories
+                  </button>
+                ) : null}
+              </div>
             )}
           </div>
           <div className="computer-base" aria-hidden="true"><span /></div>
         </div>
-        <div className="empty-plinth" aria-hidden="true">
-          <div className="plinth-top" />
-          <p>ARTIFACT BAY<br />EMPTY</p>
-        </div>
+
+        {hasArtifacts ? (
+          <div className="artifact-grid">
+            {connection.cataloguedRepositories.map((repository) => (
+              <ArtifactCard key={repository.id} repository={repository} />
+            ))}
+          </div>
+        ) : (
+          <div className="empty-plinth" aria-hidden="true">
+            <div className="plinth-top" />
+            <p>ARTIFACT BAY<br />EMPTY</p>
+          </div>
+        )}
       </section>
 
+      {connection.cataloguedError ? (
+        <p className="picker-state" role="alert">{connection.cataloguedError}</p>
+      ) : null}
+
       <footer className="lab-footer">
-        <span>0 artifacts catalogued</span>
+        <span>
+          {connection.cataloguedLoading
+            ? "Reading dig site…"
+            : `${connection.cataloguedRepositories.length} artifact${connection.cataloguedRepositories.length === 1 ? "" : "s"} catalogued`}
+        </span>
         <span data-sync={syncState}>
           {syncState === "synced" ? "Creator Memory synced" : null}
           {syncState === "syncing" ? "Syncing Creator Memory…" : null}
@@ -87,6 +141,22 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
           {syncState === "device" ? "Creator Memory saved on this device" : null}
         </span>
       </footer>
+
+      {connection.pickerOpen ? (
+        <RepositoryPicker
+          repositories={connection.authorizedRepositories}
+          loading={connection.pickerLoading}
+          error={connection.pickerError}
+          hasInstallation={connection.hasInstallation}
+          existingRepositoryIds={existingRepositoryIds}
+          addingRepositoryId={connection.addingRepositoryId}
+          addFeedback={connection.addFeedback}
+          onAdd={(repository) => void connection.addRepository(repository)}
+          onRetry={() => void connection.chooseRepositoryAccess()}
+          onStartInstall={() => void connection.startInstall()}
+          onClose={connection.closePicker}
+        />
+      ) : null}
 
       {settingsOpen ? (
         <div className="modal-backdrop" role="presentation" onMouseDown={onCloseSettings}>
@@ -121,4 +191,51 @@ export function LabDashboard({ profile, session, syncState, settingsOpen, onOpen
 
 function Memory({ label, value }: { label: string; value: string }) {
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
+}
+
+function ConnectionBanner({
+  banner,
+  onDismiss,
+}: {
+  banner: NonNullable<ReturnType<typeof useGitHubAppConnection>["banner"]>;
+  onDismiss: () => void;
+}) {
+  const content = (() => {
+    switch (banner.kind) {
+      case "completing":
+        return { tone: "info" as const, message: "Confirming your GitHub App installation…" };
+      case "installation_canceled":
+        return {
+          tone: "muted" as const,
+          message: "Installation was canceled. No repository access was granted.",
+        };
+      case "pending_approval":
+        return {
+          tone: "info" as const,
+          message: "An organization owner must approve this installation before repositories can be listed.",
+        };
+      case "installed":
+        return {
+          tone: "success" as const,
+          message: banner.accountLogin
+            ? `GitHub App installed for ${banner.accountLogin}. Choose which repositories to add.`
+            : "GitHub App installed. Choose which repositories to add.",
+        };
+      case "error":
+        return { tone: "error" as const, message: banner.message };
+      default:
+        return { tone: "muted" as const, message: "" };
+    }
+  })();
+
+  return (
+    <div className="connection-banner" data-tone={content.tone} role="status">
+      <p>{content.message}</p>
+      {banner.kind !== "completing" ? (
+        <button type="button" className="close-button" aria-label="Dismiss" onClick={onDismiss}>
+          ×
+        </button>
+      ) : null}
+    </div>
+  );
 }

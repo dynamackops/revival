@@ -56,3 +56,19 @@ jobs:
       - name: Stop local Supabase
         if: always()
         run: npx --yes supabase@2.116.0 stop --no-backup
+
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run github-app Edge Function tests
+        # Run from inside the function's own directory so Deno's config
+        # discovery (which walks up from the current working directory, not
+        # down into the test path) finds deno.json and its
+        # nodeModulesDir setting; --node-modules-dir=auto is passed
+        # explicitly too so npm: specifiers resolve regardless.
+        working-directory: supabase/functions/github-app
+        run: deno test --allow-env --allow-net --node-modules-dir=auto .
