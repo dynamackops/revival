@@ -3,7 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 import { corsHeaders } from "../_shared/cors.ts";
-import { createAppJwt, mintInstallationToken } from "../github-app/github.ts";
+import { createAppJwt, GitHubApiError, mintInstallationToken } from "../github-app/github.ts";
 import {
   examineStructure,
   fetchHeadSha,
@@ -12,6 +12,37 @@ import {
   traceHistory,
 } from "./github.ts";
 import { runEvidencePipeline } from "./pipeline.ts";
+
+// A GitHub App installation is uninstalled and reinstalled as a brand new
+// installation ID; a repository catalogued under the old installation keeps
+// a stale `github_installation_reference` until it is re-added through the
+// picker. Minting a token for that stale ID returns 401/403/404 from
+// GitHub — that is a revoked-access condition, not an unexpected failure,
+// and must be reported as such rather than falling through to a generic
+// "please try again" message that gives the user no path forward.
+function isRevokedInstallation(error: GitHubApiError): boolean {
+  return error.status === 401 || error.status === 403 || error.status === 404;
+}
+
+/** Tags a stage name onto whatever error a startup step throws, without
+ * altering the error's type, so failures can be logged with exactly which
+ * stage failed while still being handled by their original error class. */
+async function withStage<T>(stage: string, requestId: string, run: () => PromiseLike<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    console.error("excavation start stage failed", {
+      requestId,
+      stage,
+      errorName: error instanceof Error ? error.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      ...(error instanceof GitHubApiError || error instanceof RepositoryEvidenceError
+        ? { status: error.status }
+        : {}),
+    });
+    throw error;
+  }
+}
 
 class HandledError extends Error {
   constructor(readonly code: string, message: string, readonly status: number) {
@@ -201,22 +232,32 @@ async function startExcavation(
   env: Env,
   userId: string,
   repositoryId: string,
+  requestId: string,
 ): Promise<ExcavationSnapshot> {
-  const repository = await repositoryContext(admin, userId, repositoryId);
-  const appJwt = createAppJwt(env.GITHUB_APP_ID, env.GITHUB_APP_PRIVATE_KEY);
-  const installationToken = await mintInstallationToken(appJwt, repository.installation_id);
-  const commitSha = await fetchHeadSha(
-    installationToken,
-    repository.owner,
-    repository.name,
-    repository.default_branch,
+  const repository = await withStage(
+    "repository_lookup", requestId, () => repositoryContext(admin, userId, repositoryId),
+  );
+  const appJwt = await withStage(
+    "github_app_jwt", requestId,
+    () => Promise.resolve(createAppJwt(env.GITHUB_APP_ID, env.GITHUB_APP_PRIVATE_KEY)),
+  );
+  const installationToken = await withStage(
+    "installation_token", requestId,
+    () => mintInstallationToken(appJwt, repository.installation_id),
+  );
+  const commitSha = await withStage(
+    "head_sha_fetch", requestId,
+    () => fetchHeadSha(installationToken, repository.owner, repository.name, repository.default_branch),
   );
 
-  const { data, error } = await admin.rpc("excavation_start", {
-    p_user_id: userId,
-    p_repository_id: repositoryId,
-    p_commit_sha: commitSha,
-  });
+  const { data, error } = await withStage(
+    "excavation_start_rpc", requestId,
+    () => admin.rpc("excavation_start", {
+      p_user_id: userId,
+      p_repository_id: repositoryId,
+      p_commit_sha: commitSha,
+    }),
+  );
   if (error) throw new HandledError("excavation_start_failed", error.message, 500);
   const snapshot = (data ?? [])[0] as ExcavationSnapshot | undefined;
   if (!snapshot) throw new HandledError("excavation_start_failed", "No operation was created", 500);
@@ -239,11 +280,13 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
 
+  const requestId = crypto.randomUUID();
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return jsonResponse({ error: "invalid_json" }, 400);
+    return jsonResponse({ error: "invalid_json", requestId }, 400);
   }
 
   try {
@@ -259,7 +302,10 @@ export async function handleRequest(req: Request): Promise<Response> {
       if (!/^[0-9a-f-]{36}$/i.test(repositoryId)) {
         throw new HandledError("invalid_repository_id", "Choose a repository to excavate", 400);
       }
-      return jsonResponse({ operation: await startExcavation(admin, env, userId, repositoryId) });
+      return jsonResponse({
+        operation: await startExcavation(admin, env, userId, repositoryId, requestId),
+        requestId,
+      });
     }
 
     if (action === "mark-presentation-seen") {
@@ -271,30 +317,48 @@ export async function handleRequest(req: Request): Promise<Response> {
       if (error || data !== true) {
         throw new HandledError("excavation_not_found", "Excavation not found", 404);
       }
-      return jsonResponse({ presentationSeen: true });
+      return jsonResponse({ presentationSeen: true, requestId });
     }
 
     throw new HandledError("unknown_action", "Unknown excavation action", 400);
   } catch (error) {
     if (error instanceof HandledError) {
-      console.error("excavation request failed", { code: error.code });
+      console.error("excavation request failed", { requestId, code: error.code });
       const safeMessage = error.status >= 500
         ? "Revival could not start the excavation. Please try again."
         : error.message;
-      return jsonResponse({ error: error.code, message: safeMessage }, error.status);
+      return jsonResponse({ error: error.code, message: safeMessage, requestId }, error.status);
+    }
+    if (error instanceof GitHubApiError) {
+      const revoked = isRevokedInstallation(error);
+      console.error("excavation github app error", { requestId, status: error.status, revoked });
+      return jsonResponse({
+        error: revoked ? "repository_access_revoked" : "github_unavailable",
+        message: revoked
+          ? "GitHub access to this repository must be reconnected. Reopen the repository picker and add it again."
+          : "GitHub is temporarily unavailable. Please try again.",
+        requestId,
+      }, revoked ? 403 : 502);
     }
     if (error instanceof RepositoryEvidenceError) {
+      console.error("excavation repository evidence error", { requestId, status: error.status });
       return jsonResponse({
         error: error.status === 403 ? "repository_access_revoked" : "github_unavailable",
         message: error.status === 403
           ? "GitHub access to this repository must be reconnected."
           : "GitHub is temporarily unavailable. Please try again.",
+        requestId,
       }, error.status === 403 ? 403 : 502);
     }
-    console.error("unexpected excavation error", error);
+    console.error("unexpected excavation error", {
+      requestId,
+      errorName: error instanceof Error ? error.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     return jsonResponse({
       error: "excavation_unavailable",
       message: "Revival could not start the excavation. Please try again.",
+      requestId,
     }, 500);
   }
 }
