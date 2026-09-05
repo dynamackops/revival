@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(15);
 
 insert into auth.users (id, email)
 values ('33333333-3333-4333-8333-333333333333', 'revival-github-app@example.test');
@@ -67,6 +67,29 @@ select results_eq(
   $$select already_catalogued from public.repository_add('33333333-3333-4333-8333-333333333333'::uuid, 9001::bigint, 5001::bigint, 'octocat', 'demo', 'main', 'public', now(), now())$$,
   array[true],
   'repeating repository_add reports already_catalogued instead of duplicating'
+);
+
+-- Re-adding a repository under a different (e.g. reinstalled) installation
+-- refreshes its stale installation reference instead of leaving it pointed
+-- at an installation that may no longer exist on GitHub.
+select account_login from public.github_installation_upsert('33333333-3333-4333-8333-333333333333'::uuid, 9002::bigint, 'octocat');
+
+select results_eq(
+  $$select already_catalogued from public.repository_add('33333333-3333-4333-8333-333333333333'::uuid, 9002::bigint, 5001::bigint, 'octocat', 'demo', 'develop', 'private', now(), now())$$,
+  array[true],
+  'reconnecting under a new installation still reports already_catalogued'
+);
+select results_eq(
+  $$select default_branch from public.repositories where user_id = '33333333-3333-4333-8333-333333333333'::uuid and github_repository_id = 5001$$,
+  array['develop'::text],
+  'reconnecting refreshes the stored default branch'
+);
+select results_eq(
+  $$select gi.github_installation_id from public.repositories r
+    join private.github_installations gi on gi.id = r.github_installation_reference
+    where r.user_id = '33333333-3333-4333-8333-333333333333'::uuid and r.github_repository_id = 5001$$,
+  array[9002::bigint],
+  'reconnecting repoints the repository at the current installation'
 );
 
 select * from finish();
